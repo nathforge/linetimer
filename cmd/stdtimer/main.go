@@ -18,44 +18,60 @@ const usage = "Usage: %s COMMAND [ARGS...]"
 const readBufferSize = 32 * 1024
 
 func main() {
-	if err := run(); err != nil {
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
-			os.Exit(exitErr.ExitCode())
-		}
+	err := run()
 
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+	if err == nil {
+		return
 	}
+
+	// If COMMAND returned a non-zero exit code, exit with that same code.
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
+		os.Exit(exitErr.ExitCode())
+	}
+
+	// Log unexpected errors to stderr.
+	fmt.Fprintln(os.Stderr, err)
+	os.Exit(1)
 }
 
 func run() error {
+	// Check args.
 	if len(os.Args) < 2 {
 		return fmt.Errorf(usage, filepath.Base(os.Args[0]))
 	}
 
+	// Create command object.
 	cmd := exec.Command(os.Args[1], os.Args[2:]...)
+
+	// Pass our stdin to the command.
 	cmd.Stdin = os.Stdin
 
+	// Hook into stdout.
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
 	}
 	defer stdout.Close()
 
+	// Hook into stderr.
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		return err
 	}
 	defer stderr.Close()
 
+	// Run command.
 	if err := cmd.Start(); err != nil {
 		return err
 	}
+
+	// Record start time.
 	startedAt := time.Now().Unix()
 
 	wg := sync.WaitGroup{}
 
+	// Transform stdout output.
 	var stdoutErr error
 	go func() {
 		_, stdoutErr = io.Copy(os.Stdout, prependDuration(startedAt, stdout))
@@ -63,6 +79,7 @@ func run() error {
 	}()
 	wg.Add(1)
 
+	// Transform stderr output.
 	var stderrErr error
 	go func() {
 		_, stderrErr = io.Copy(os.Stderr, prependDuration(startedAt, stderr))
@@ -70,17 +87,17 @@ func run() error {
 	}()
 	wg.Add(1)
 
+	// Wait for transforms to complete and the command to terminate.
 	wg.Wait()
 	cmdWaitErr := cmd.Wait()
 
+	// Return an error if available.
 	if cmdWaitErr != nil {
 		return fmt.Errorf("error running command: %s", cmdWaitErr)
 	}
-
 	if stdoutErr != nil {
 		return fmt.Errorf("error copying stdout: %s", stdoutErr)
 	}
-
 	if stderrErr != nil {
 		return fmt.Errorf("error copying stderr: %s", stderrErr)
 	}
@@ -89,6 +106,8 @@ func run() error {
 }
 
 func prependDuration(startedAt int64, r io.Reader) io.Reader {
+	// Prepend command duration (e.g `[1:23]`) to the start of each line.
+
 	startOfLine := true
 
 	readBuffer := make([]byte, readBufferSize)
@@ -109,6 +128,10 @@ func prependDuration(startedAt int64, r io.Reader) io.Reader {
 		linePrefix := fmt.Sprintf("[%0d:%02d] ", minutes, seconds)
 
 		var writeBuffer bytes.Buffer
+
+		// Insert linePrefix at the start of a line.
+		// We need to track "\n" characters and insert linePrefix before the
+		// next byte is written.
 
 		if startOfLine {
 			writeBuffer.Write([]byte(linePrefix))
