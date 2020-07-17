@@ -93,13 +93,13 @@ func run() error {
 
 	// Return an error if available.
 	if cmdWaitErr != nil {
-		return fmt.Errorf("error running command: %s", cmdWaitErr)
+		return fmt.Errorf("error running command: %w", cmdWaitErr)
 	}
 	if stdoutErr != nil {
-		return fmt.Errorf("error copying stdout: %s", stdoutErr)
+		return fmt.Errorf("error copying stdout: %w", stdoutErr)
 	}
 	if stderrErr != nil {
-		return fmt.Errorf("error copying stderr: %s", stderrErr)
+		return fmt.Errorf("error copying stderr: %w", stderrErr)
 	}
 
 	return nil
