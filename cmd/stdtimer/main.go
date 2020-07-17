@@ -137,6 +137,8 @@ func prependDuration(startedAt int64, r io.Reader) io.Reader {
 			writeBuffer.Write([]byte(linePrefix))
 		}
 
+		// Replace "\n" characters unless at the end of the buffer.
+		// This indicates end of line, but not yet a start of line.
 		writeBuffer.Write(bytes.Replace(
 			readBuffer[:n-1],
 			[]byte{'\n'},
@@ -145,6 +147,8 @@ func prependDuration(startedAt int64, r io.Reader) io.Reader {
 		))
 		writeBuffer.WriteByte(readBuffer[n-1])
 
+		// Set that we've ended a line, and are waiting for more bytes to start
+		// the next line.
 		startOfLine = readBuffer[n-1] == '\n'
 
 		return writeBuffer.Bytes(), nil
