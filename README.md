@@ -24,9 +24,8 @@ Output:
 
 ## Installation
 
-Download a binary for your OS from the
-[releases](https://github.com/nathforge/stdtimer/releases/latest) section.
-Extract with `tar xvf FILENAME.tar.gz`, and move `stdtimer` to a directory
+Download from the [releases](https://github.com/nathforge/stdtimer/releases/latest) page.
+Extract with `tar xzf FILENAME.tar.gz`, and move `stdtimer` to a directory
 included in your system's `PATH`.
 
 
