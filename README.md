@@ -2,7 +2,7 @@
 
 Run a command, prefixing each line with the current duration.
 
-Example:
+Example command:
 
 ```
 $ stdtimer bash -c '
@@ -10,6 +10,11 @@ $ stdtimer bash -c '
     echo Middle;    sleep 2
     echo End
   '
+```
+
+Outputs:
+
+```
 [0:00] Beginning
 [0:02] Middle
 [0:04] End
