@@ -2,17 +2,18 @@
 
 Run a command, prefixing each line with the current duration.
 
-Example command:
+
+## Example command
 
 ```
-$ stdtimer bash -c '
+stdtimer bash -c '
     echo Beginning; sleep 2
     echo Middle;    sleep 2
     echo End
-  '
+'
 ```
 
-Outputs:
+Output:
 
 ```
 [0:00] Beginning
