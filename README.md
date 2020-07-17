@@ -6,11 +6,11 @@ Run a command, prefixing each line with the current duration.
 ## Example command
 
 ```
-stdtimer bash -c '
-    echo Beginning; sleep 2
-    echo Middle;    sleep 2
-    echo End
-'
+stdtimer bash -c "
+  echo Beginning; sleep 2
+  echo Middle;    sleep 2
+  echo End
+"
 ```
 
 Output:
