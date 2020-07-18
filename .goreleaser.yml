@@ -1,11 +1,11 @@
-project_name: stdtimer
+project_name: linetimer
 before:
   hooks:
     - go mod download
 builds:
 - env:
   - CGO_ENABLED=0
-  main: ./cmd/stdtimer
+  main: ./cmd/linetimer
   goos:
     - linux
     - darwin

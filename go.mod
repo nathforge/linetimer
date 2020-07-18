@@ -1,4 +1,4 @@
-module github.com/nathforge/stdtimer
+module github.com/nathforge/linetimer
 
 go 1.14
 
