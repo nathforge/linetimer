@@ -120,6 +120,7 @@ func run() error {
 func prependDuration(getPrefix func() string, r io.Reader) io.Reader {
 	// Prepend command duration (e.g `[1:23]`) to the start of each line.
 
+	// Start of stream == start of line.
 	startOfLine := true
 
 	readBuffer := make([]byte, readBufferSize)
@@ -138,26 +139,27 @@ func prependDuration(getPrefix func() string, r io.Reader) io.Reader {
 
 		var writeBuffer bytes.Buffer
 
-		// Insert linePrefix at the start of a line.
-		// We need to track "\n" characters and insert linePrefix before the
-		// next byte is written.
-
+		// Write `prefix` if we're at the start of a line - either at the
+		// start of the stream, or after the previous call which ended a line.
 		if startOfLine {
 			writeBuffer.Write([]byte(prefix))
 		}
 
-		// Replace "\n" characters unless at the end of the buffer.
-		// This indicates end of line, but not yet a start of line.
-		writeBuffer.Write(bytes.Replace(
-			readBuffer[:n-1],
-			[]byte{'\n'},
-			[]byte("\n"+prefix),
-			-1,
-		))
+		// Add `prefix` to the start of each line.
+		if n > 1 {
+			writeBuffer.Write(bytes.Replace(
+				readBuffer[:n-1],
+				[]byte{'\n'},
+				[]byte("\n"+prefix),
+				-1,
+			))
+		}
+		// The last byte in a buffer can't start a line, though might be an
+		// "\n" character which *ends* a line.
 		writeBuffer.WriteByte(readBuffer[n-1])
 
-		// Set that we've ended a line, and are waiting for more bytes to start
-		// the next line.
+		// Check if we've ended a line. Set `startOfLine` for the next call to
+		// this function.
 		startOfLine = readBuffer[n-1] == '\n'
 
 		return writeBuffer.Bytes(), nil
