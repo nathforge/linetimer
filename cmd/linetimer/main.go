@@ -71,10 +71,19 @@ func run() error {
 
 	wg := sync.WaitGroup{}
 
+	getPrefix := func() func() string {
+		return func() string {
+			elapsed := time.Now().Unix() - startedAt
+			minutes := elapsed / 60
+			seconds := elapsed % 60
+			return fmt.Sprintf("[%0d:%02d] ", minutes, seconds)
+		}
+	}()
+
 	// Transform stdout output.
 	var stdoutErr error
 	go func() {
-		_, stdoutErr = io.Copy(os.Stdout, prependDuration(startedAt, stdout))
+		_, stdoutErr = io.Copy(os.Stdout, prependDuration(getPrefix, stdout))
 		wg.Done()
 	}()
 	wg.Add(1)
@@ -82,7 +91,7 @@ func run() error {
 	// Transform stderr output.
 	var stderrErr error
 	go func() {
-		_, stderrErr = io.Copy(os.Stderr, prependDuration(startedAt, stderr))
+		_, stderrErr = io.Copy(os.Stderr, prependDuration(getPrefix, stderr))
 		wg.Done()
 	}()
 	wg.Add(1)
@@ -90,6 +99,9 @@ func run() error {
 	// Wait for transforms to complete and the command to terminate.
 	wg.Wait()
 	cmdWaitErr := cmd.Wait()
+
+	// Print a completion timer.
+	fmt.Println(getPrefix())
 
 	// Return an error if available.
 	if cmdWaitErr != nil {
@@ -105,7 +117,7 @@ func run() error {
 	return nil
 }
 
-func prependDuration(startedAt int64, r io.Reader) io.Reader {
+func prependDuration(getPrefix func() string, r io.Reader) io.Reader {
 	// Prepend command duration (e.g `[1:23]`) to the start of each line.
 
 	startOfLine := true
@@ -122,10 +134,7 @@ func prependDuration(startedAt int64, r io.Reader) io.Reader {
 			return []byte{}, nil
 		}
 
-		elapsed := time.Now().Unix() - startedAt
-		minutes := elapsed / 60
-		seconds := elapsed % 60
-		linePrefix := fmt.Sprintf("[%0d:%02d] ", minutes, seconds)
+		prefix := getPrefix()
 
 		var writeBuffer bytes.Buffer
 
@@ -134,7 +143,7 @@ func prependDuration(startedAt int64, r io.Reader) io.Reader {
 		// next byte is written.
 
 		if startOfLine {
-			writeBuffer.Write([]byte(linePrefix))
+			writeBuffer.Write([]byte(prefix))
 		}
 
 		// Replace "\n" characters unless at the end of the buffer.
@@ -142,7 +151,7 @@ func prependDuration(startedAt int64, r io.Reader) io.Reader {
 		writeBuffer.Write(bytes.Replace(
 			readBuffer[:n-1],
 			[]byte{'\n'},
-			[]byte("\n"+linePrefix),
+			[]byte("\n"+prefix),
 			-1,
 		))
 		writeBuffer.WriteByte(readBuffer[n-1])
