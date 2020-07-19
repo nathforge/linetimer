@@ -8,10 +8,11 @@ Run a command, prefixing each line with the current duration.
 ```
 $ linetimer bash -c "echo Beginning; sleep 1
                      echo Middle;    sleep 2
-                     echo End"
+                     echo End;       sleep 3"
 [0:00] Beginning
 [0:01] Middle
 [0:03] End
+[0:06]
 ```
 
 
