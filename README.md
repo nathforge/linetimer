@@ -17,7 +17,14 @@ $ linetimer bash -c "echo Beginning; sleep 1
 
 ## Installation
 
-Download from the [releases](https://github.com/nathforge/linetimer/releases/latest) page.
+If you have [Go](https://golang.org/) installed:
+
+```
+go install github.com/nathforge/linetimer/cmd/linetimer
+```
+
+Otherwise, download a file from the
+[releases](https://github.com/nathforge/linetimer/releases/latest) page.
 Extract with `tar xzf FILENAME.tar.gz` and move `linetimer` to a directory
 included in your system's `PATH`.
 
