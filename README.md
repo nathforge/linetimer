@@ -21,7 +21,7 @@ $ linetimer bash -c "echo Beginning; sleep 1
 If you have [Go](https://golang.org/) you can install from source:
 
 ```
-go install github.com/nathforge/linetimer/cmd/linetimer
+go get github.com/nathforge/linetimer/cmd/linetimer
 ```
 
 Otherwise, download a file from the
