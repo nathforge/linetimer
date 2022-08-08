@@ -67,18 +67,16 @@ func run() error {
 	}
 
 	// Record start time.
-	startedAt := time.Now().Unix()
+	startedAt := time.Now()
 
 	wg := sync.WaitGroup{}
 
-	getPrefix := func() func() string {
-		return func() string {
-			elapsed := time.Now().Unix() - startedAt
-			minutes := elapsed / 60
-			seconds := elapsed % 60
-			return fmt.Sprintf("[%0d:%02d] ", minutes, seconds)
-		}
-	}()
+	getPrefix := func() string {
+		elapsed := time.Now().Sub(startedAt)
+		return fmt.Sprintf("[%s] ",
+			fmt.Sprintf("%.3f", float64(elapsed)/float64(time.Second)),
+		)
+	}
 
 	// Transform stdout output.
 	var stdoutErr error
